@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS - Next-Gen Tech & Lifestyle Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        dark: {
+                            bg: '#0b0f19',
+                            card: '#111827',
+                            border: '#1f2937',
+                            surface: '#161f30'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)' },
+                            '100%': { boxShadow: '0 0 35px rgba(99, 102, 241, 0.7)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+        /* Glassmorphism Styles */
+        .glass {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(22, 31, 48, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-card:hover {
+            background: rgba(26, 37, 58, 0.85);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            transition: all 0.3s ease;
+        }
+        .gradient-btn:hover {
+            opacity: 0.95;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideInRight 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <header class="sticky top-0 z-40 glass border-b border-gray-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-10 h-10 rounded-xl gradient-btn flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="zap" class="w-6 h-6 fill-current"></i>
+                    </div>
+                    <span class="text-2xl font-black tracking-wider text-white">NEXUS<span class="gradient-text">.</span></span>
+                </div>
+
+                <!-- Navigation Links / Dynamic Search Input -->
+                <div class="hidden md:flex items-center gap-8">
+                    <nav class="flex gap-6 text-sm font-medium text-gray-300">
+                        <button onclick="filterCategory('All')" class="hover:text-brand-400 transition-colors">Home</button>
+                        <button onclick="scrollToProducts()" class="hover:text-brand-400 transition-colors">Shop All</button>
+                        <button onclick="filterCategory('Audio')" class="hover:text-brand-400 transition-colors">Audio</button>
+                        <button onclick="filterCategory('Wearables')" class="hover:text-brand-400 transition-colors">Wearables</button>
+                    </nav>
+
+                    <div class="relative w-64">
+                        <input type="text" id="search-input" placeholder="Search devices..." 
+                            class="w-full bg-dark-bg border border-gray-800 rounded-full py-2 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500 transition-colors">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-2.5 text-gray-500"></i>
+                    </div>
+                </div>
+
+                <!-- Header Actions (Wishlist, Cart) -->
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleWishlistModal()" class="relative p-2.5 text-gray-300 hover:text-white rounded-full hover:bg-gray-800/60 transition-colors">
+                        <i data-lucide="heart" class="w-6 h-6"></i>
+                        <span id="wishlist-badge" class="hidden absolute top-1 right-1 w-5 h-5 bg-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center">0</span>
+                    </button>
+
+                    <button onclick="toggleCartDrawer()" class="relative p-2.5 text-gray-300 hover:text-white rounded-full hover:bg-gray-800/60 transition-colors">
+                        <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                        <span id="cart-badge" class="absolute top-1 right-1 w-5 h-5 gradient-btn text-white text-xs font-bold rounded-full flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Mobile Menu Trigger -->
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 text-gray-300">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Search Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 pt-2 border-t border-gray-800/60 glass">
+            <div class="relative mb-3">
+                <input type="text" id="mobile-search-input" placeholder="Search products..." 
+                    class="w-full bg-dark-bg border border-gray-800 rounded-lg py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-gray-500"></i>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm font-medium">
+                <button onclick="filterCategory('All')" class="p-2 text-left hover:bg-gray-800 rounded-lg">All Products</button>
+                <button onclick="filterCategory('Audio')" class="p-2 text-left hover:bg-gray-800 rounded-lg">Audio</button>
+                <button onclick="filterCategory('Wearables')" class="p-2 text-left hover:bg-gray-800 rounded-lg">Wearables</button>
+                <button onclick="filterCategory('Smart Home')" class="p-2 text-left hover:bg-gray-800 rounded-lg">Smart Home</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <section class="relative overflow-hidden pt-12 pb-20 md:py-24">
+            <!-- Background Glow FX -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+            <div class="absolute top-1/3 right-10 w-[300px] h-[300px] bg-pink-600/15 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    
+                    <!-- Hero Content -->
+                    <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass border border-brand-500/30 text-brand-400 text-xs font-semibold tracking-wide uppercase">
+                            <span class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
+                            Next Generation Hardware 2026
+                        </div>
+                        
+                        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                            Elevate Your <br>
+                            <span class="gradient-text">Digital Experience</span>
+                        </h1>
+                        
+                        <p class="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-normal">
+                            Discover high-performance gear designed for tech enthusiasts, gamers, and modern creators. Unmatched precision engineering in every detail.
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                            <button onclick="scrollToProducts()" class="w-full sm:w-auto px-8 py-4 gradient-btn text-white font-semibold rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-brand-500/25">
+                                <span>Explore Showcase</span>
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </button>
+                            
+                            <button onclick="openDemoVideoModal()" class="w-full sm:w-auto px-6 py-4 glass text-gray-200 font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800/80 transition-colors border border-gray-700/50">
+                                <i data-lucide="play-circle" class="w-5 h-5 text-brand-400"></i>
+                                <span>Watch Product Demo</span>
+                            </button>
+                        </div>
+
+                        <!-- Mini Stats / Badges -->
+                        <div class="grid grid-cols-3 gap-6 pt-6 border-t border-gray-800/80 max-w-md mx-auto lg:mx-0">
+                            <div>
+                                <p class="text-2xl font-bold text-white">4.9 ★</p>
+                                <p class="text-xs text-gray-500">Customer Rating</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-white">24h</p>
+                                <p class="text-xs text-gray-500">Express Shipping</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-white">2 Yrs</p>
+                                <p class="text-xs text-gray-500">Full Warranty</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Featured Product Showcase Card -->
+                    <div class="lg:col-span-5">
+                        <div id="hero-showcase-card" class="glass-card rounded-3xl p-6 sm:p-8 relative group transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/10">
+                            <span class="absolute top-6 right-6 px-3 py-1 bg-brand-500/20 text-brand-300 text-xs font-bold rounded-full border border-brand-500/30">
+                                Featured Demo
+                            </span>
+                            
+                            <div class="relative w-full h-64 sm:h-72 my-4 flex items-center justify-center overflow-hidden">
+                                <img id="hero-img" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80" 
+                                    alt="Featured Headphone" 
+                                    class="max-h-full object-contain filter drop-shadow-[0_20px_20px_rgba(0,0,0,0.6)] animate-float transition-transform duration-700 group-hover:scale-105">
+                            </div>
+
+                            <div class="space-y-3">
+                                <p class="text-xs font-semibold text-brand-400 tracking-wider uppercase" id="hero-category">Audio Series</p>
+                                <h3 class="text-2xl font-bold text-white" id="hero-title">AeroSound Apex ANC Headphones</h3>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-3xl font-extrabold text-white" id="hero-price">$349.99</span>
+                                    <button id="hero-add-btn" class="px-5 py-2.5 gradient-btn text-white font-medium rounded-xl flex items-center gap-2 shadow-md">
+                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                        <span>Add to Cart</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="products-section" class="py-12 bg-dark-bg relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Section Header & Controls -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white tracking-tight">Explore Gear</h2>
+                        <p class="text-gray-400 text-sm mt-1">Filter through our ultra-high specification lineup</p>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="flex flex-wrap items-center gap-2" id="category-pills">
+                        <!-- Dynamically generated pills -->
+                    </div>
+                </div>
+
+                <!-- Secondary Filter Bar (Sort & Price Slider) -->
+                <div class="glass-card rounded-2xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <span class="text-gray-400 font-medium">Sort By:</span>
+                        <select id="sort-select" onchange="applyFiltersAndSort()" class="bg-dark-bg border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-brand-500 cursor-pointer">
+                            <option value="featured">Featured First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Highest Rated</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-4 w-full md:w-80">
+                        <span class="text-gray-400 font-medium shrink-0">Max Price: <span id="price-display" class="text-brand-400 font-bold">$1000</span></span>
+                        <input type="range" id="price-range" min="50" max="1000" step="25" value="1000" oninput="updatePriceFilter(this.value)" class="w-full accent-brand-500 bg-gray-800 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Dynamic Product Cards Injected Here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden text-center py-16 glass-card rounded-3xl mt-6">
+                    <i data-lucide="package-search" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">No Products Found</h3>
+                    <p class="text-gray-400 text-sm mb-6">Try adjusting your filters or search keywords.</p>
+                    <button onclick="resetFilters()" class="px-6 py-2.5 gradient-btn text-white rounded-xl font-medium">Reset All Filters</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300" onclick="toggleCartDrawer()"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 bottom-0 w-full sm:w-[450px] bg-dark-card border-l border-gray-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
+        
+        <!-- Cart Header -->
+        <div class="p-6 border-b border-gray-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i data-lucide="shopping-bag" class="w-6 h-6 text-brand-400"></i>
+                <h3 class="text-lg font-bold text-white">Your Demo Cart</h3>
+                <span id="cart-item-count" class="px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold">0 Items</span>
+            </div>
+            <button onclick="toggleCartDrawer()" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Cart Items Scroll List -->
+        <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4">
+            <!-- Dynamic Cart Items Injected Here -->
+        </div>
+
+        <!-- Cart Footer & Checkout Summary -->
+        <div class="p-6 border-t border-gray-800 bg-dark-bg/80 space-y-4">
+            
+            <!-- Coupon Code Section -->
+            <div class="flex gap-2">
+                <input type="text" id="promo-input" placeholder="Promo code (e.g. NEXUS20)" 
+                    class="flex-grow bg-dark-card border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 uppercase focus:outline-none focus:border-brand-500">
+                <button onclick="applyPromoCode()" class="px-4 py-2 glass text-brand-400 font-semibold text-xs rounded-lg hover:bg-gray-800 border border-brand-500/30">Apply</button>
+            </div>
+
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-gray-400">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal" class="text-white font-medium">$0.00</span>
+                </div>
+                <div id="discount-row" class="hidden flex justify-between text-emerald-400 font-medium">
+                    <span>Discount (20% OFF)</span>
+                    <span id="cart-discount">-$0.00</span>
+                </div>
+                <div class="flex justify-between text-gray-400">
+                    <span>Estimated Tax (8%)</span>
+                    <span id="cart-tax" class="text-white font-medium">$0.00</span>
+                </div>
+                <div class="flex justify-between text-gray-400">
+                    <span>Shipping</span>
+                    <span id="cart-shipping" class="text-emerald-400 font-medium">FREE</span>
+                </div>
+                <div class="pt-2 border-t border-gray-800 flex justify-between text-base font-bold text-white">
+                    <span>Total</span>
+                    <span id="cart-total" class="text-brand-400">$0.00</span>
+                </div>
+            </div>
+
+            <button onclick="openCheckoutModal()" id="checkout-btn" class="w-full py-3.5 gradient-btn text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span>Proceed to Checkout</span>
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+            </button>
+
+            <button onclick="clearCart()" class="w-full text-center text-xs text-gray-500 hover:text-red-400 py-1 transition-colors">
+                Clear Cart Items
+            </button>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative border border-gray-700/60 shadow-2xl">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-full bg-dark-bg/60 border border-gray-700/50">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center" id="product-modal-content">
+                <!-- Injected Dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative border border-gray-700/60">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-full bg-dark-bg/60">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h3 class="text-2xl font-bold text-white mb-2">Demo Checkout Workflow</h3>
+            <p class="text-xs text-gray-400 mb-6">Complete customer demo simulation with instant order generation.</p>
+
+            <form id="checkout-form" onsubmit="processOrder(event)" class="space-y-6">
+                <!-- Shipping Details -->
+                <div>
+                    <h4 class="text-sm font-semibold text-brand-400 uppercase tracking-wider mb-3">1. Shipping Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Full Name</label>
+                            <input type="text" required value="Alex Mercer" class="w-full bg-dark-bg border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Email Address</label>
+                            <input type="email" required value="alex.demo@nexus.io" class="w-full bg-dark-bg border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs text-gray-400 mb-1">Street Address</label>
+                            <input type="text" required value="742 Evergreen Tech Boulevard" class="w-full bg-dark-bg border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <h4 class="text-sm font-semibold text-brand-400 uppercase tracking-wider mb-3">2. Payment Method</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="p-4 rounded-xl border border-brand-500 bg-brand-500/10 flex items-center gap-3 cursor-pointer">
+                            <input type="radio" name="payment" value="card" checked class="accent-brand-500">
+                            <div>
+                                <p class="text-sm font-bold text-white">Credit Card</p>
+                                <p class="text-xs text-gray-400">Demo Instant Card</p>
+                            </div>
+                        </label>
+                        <label class="p-4 rounded-xl border border-gray-800 bg-dark-bg flex items-center gap-3 cursor-pointer hover:border-gray-700">
+                            <input type="radio" name="payment" value="cod" class="accent-brand-500">
+                            <div>
+                                <p class="text-sm font-bold text-white">Cash on Delivery</p>
+                                <p class="text-xs text-gray-400">Pay upon receipt</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Card Details Dummy Fields -->
+                <div class="grid grid-cols-3 gap-3 p-4 bg-dark-bg rounded-xl border border-gray-800">
+                    <div class="col-span-3">
+                        <label class="block text-xs text-gray-400 mb-1">Card Number</label>
+                        <input type="text" value="•••• •••• •••• 4242" readonly class="w-full bg-dark-card border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Expiry</label>
+                        <input type="text" value="12/28" readonly class="w-full bg-dark-card border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">CVC</label>
+                        <input type="text" value="888" readonly class="w-full bg-dark-card border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-300">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex items-center justify-between border-t border-gray-800">
+                    <div>
+                        <span class="text-xs text-gray-400 block">Total Payable:</span>
+                        <span id="checkout-final-total" class="text-2xl font-black text-brand-400">$0.00</span>
+                    </div>
+                    <button type="submit" id="confirm-order-btn" class="px-8 py-3.5 gradient-btn text-white font-bold rounded-xl shadow-lg flex items-center gap-2">
+                        <span>Place Order Now</span>
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="order-success-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-3xl max-w-lg w-full p-8 text-center border border-emerald-500/40 relative animate-pulse-slow">
+            <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-400 border border-emerald-500/30">
+                <i data-lucide="check" class="w-10 h-10"></i>
+            </div>
+
+            <h3 class="text-3xl font-black text-white mb-2">Order Confirmed!</h3>
+            <p class="text-gray-300 text-sm mb-6">Thank you Alex! Your demo order has been logged and is being prepared.</p>
+
+            <div class="bg-dark-bg p-4 rounded-2xl border border-gray-800 text-left space-y-2 mb-6 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Order Reference:</span>
+                    <span id="order-id-display" class="text-brand-400 font-mono font-bold">#NX-89210</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Estimated Delivery:</span>
+                    <span class="text-white font-medium">Within 48 Hours</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Status:</span>
+                    <span class="text-emerald-400 font-bold">Processing</span>
+                </div>
+            </div>
+
+            <button onclick="finishOrderDemo()" class="w-full py-3.5 gradient-btn text-white font-bold rounded-xl shadow-lg">
+                Continue Shopping & Reset
+            </button>
+        </div>
+    </div>
+
+    <footer class="glass border-t border-gray-800/80 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg gradient-btn flex items-center justify-center text-white">
+                            <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">NEXUS</span>
+                    </div>
+                    <p class="text-gray-400 text-xs leading-relaxed">
+                        High-performance electronic hardware & smart accessories built for tomorrow's digital space.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-3">Shop Categories</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li><a href="#" onclick="filterCategory('Audio')" class="hover:text-brand-400">Audio & Soundwear</a></li>
+                        <li><a href="#" onclick="filterCategory('Wearables')" class="hover:text-brand-400">Smart Wearables</a></li>
+                        <li><a href="#" onclick="filterCategory('Smart Home')" class="hover:text-brand-400">Smart Home Devices</a></li>
+                        <li><a href="#" onclick="filterCategory('Accessories')" class="hover:text-brand-400">Gear & Accessories</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-3">Customer Service</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li><a href="#" class="hover:text-brand-400">Order Tracking</a></li>
+                        <li><a href="#" class="hover:text-brand-400">Warranty Policy</a></li>
+                        <li><a href="#" class="hover:text-brand-400">Express Delivery</a></li>
+                        <li><a href="#" class="hover:text-brand-400">24/7 Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-3">Demo Insights</h4>
+                    <p class="text-xs text-gray-400 mb-3">This page includes LocalStorage persistence for complete offline cart verification.</p>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="shield-check" class="text-brand-400 w-5 h-5"></i>
+                        <span class="text-xs text-gray-300 font-medium">100% Interactive Walkthrough</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-gray-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+                <p>© 2026 NEXUS Digital Store. Designed for Interactive Customer Demos.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-gray-400">Privacy Policy</a>
+                    <a href="#" class="hover:text-gray-400">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. PRODUCT DATABASE ---
+        const PRODUCTS = [
+            {
+                id: 'p1',
+                title: 'AeroSound Apex ANC Headphones',
+                category: 'Audio',
+                price: 349.99,
+                rating: 4.9,
+                reviewsCount: 128,
+                badge: 'Best Seller',
+                badgeColor: 'bg-indigo-500',
+                image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+                colors: ['#3b82f6', '#111827', '#f3f4f6'],
+                description: 'Flagship active noise cancelling headphones with custom 45mm beryllium drivers, spatial audio tracking, and 40-hour battery life.',
+                specs: ['40h Playtime', 'Active Noise Cancelling', 'Bluetooth 5.3', 'Ultra Soft Memory Foam']
+            },
+            {
+                id: 'p2',
+                title: 'Chronos Ultra Smartwatch G3',
+                category: 'Wearables',
+                price: 279.50,
+                rating: 4.8,
+                reviewsCount: 94,
+                badge: 'New Arrival',
+                badgeColor: 'bg-emerald-500',
+                image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+                colors: ['#000000', '#9ca3af', '#d97706'],
+                description: 'Aerospace titanium casing featuring dual-band GPS, AMOLED sapphire screen, continuous ECG monitor, and 100m water resistance.',
+                specs: ['Titanium Frame', 'AMOLED 120Hz', 'SpO2 & ECG', '14 Days Battery']
+            },
+            {
+                id: 'p3',
+                title: 'Lumina Smart Ambient Bar',
+                category: 'Smart Home',
+                price: 129.00,
+                rating: 4.7,
+                reviewsCount: 65,
+                badge: 'Popular',
+                badgeColor: 'bg-purple-500',
+                image: 'https://images.unsplash.com/photo-1507646298591-24757e698596?auto=format&fit=crop&w=800&q=80',
+                colors: ['#6366f1', '#ec4899', '#10b981'],
+                description: 'Dynamic RGBIC room illumination syncing with sound frequencies and display video feeds for an immersive atmosphere.',
+                specs: ['16 Million Colors', 'Voice Control', 'Sound Reactive', 'Matter Compatible']
+            },
+            {
+                id: 'p4',
+                title: 'Vortex Mechanical Gaming Mouse',
+                category: 'Accessories',
+                price: 89.99,
+                rating: 4.9,
+                reviewsCount: 210,
+                badge: 'Pro Grade',
+                badgeColor: 'bg-rose-500',
+                image: 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80',
+                colors: ['#0b0f19', '#ffffff'],
+                description: 'Ultra-lightweight 49g wireless mouse featuring 30k DPI optical sensors, optical microswitches, and zero latency wireless.',
+                specs: ['49g Weight', '30,000 DPI', '80h Battery', 'Optical Switches']
+            },
+            {
+                id: 'p5',
+                title: 'SonicPulse Portable Speaker',
+                category: 'Audio',
+                price: 159.00,
+                rating: 4.6,
+                reviewsCount: 88,
+                badge: 'Outdoor',
+                badgeColor: 'bg-amber-500',
+                image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80',
+                colors: ['#1f2937', '#2563eb'],
+                description: 'IP67 waterproof Bluetooth speaker delivering 360-degree punchy bass, dual passive radiators, and emergency power bank features.',
+                specs: ['IP67 Waterproof', '24h Playtime', 'Powerbank Mode', '360° Sound']
+            },
+            {
+                id: 'p6',
+                title: 'FitPulse Fitness Tracker X',
+                category: 'Wearables',
+                price: 99.00,
+                rating: 4.5,
+                reviewsCount: 72,
+                badge: 'Hot Deal',
+                badgeColor: 'bg-red-500',
+                image: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=800&q=80',
+                colors: ['#111827', '#059669'],
+                description: 'Sleek health band monitoring sleep stages, recovery scores, daily exertion, and stress levels with real-time biometric feedback.',
+                specs: ['Sleep Scoring', 'Continuous Heart Rate', 'Skin Temp Sensor', 'Submersible']
+            },
+            {
+                id: 'p7',
+                title: 'CyberDeck Mechanical Keyboard',
+                category: 'Accessories',
+                price: 219.00,
+                rating: 4.9,
+                reviewsCount: 156,
+                badge: 'Custom',
+                badgeColor: 'bg-cyan-500',
+                image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
+                colors: ['#1e1b4b', '#111827'],
+                description: 'Hot-swappable gasket-mounted mechanical keyboard with CNC aluminum chassis, lube switches, and custom PBT keycaps.',
+                specs: ['CNC Aluminum', 'Hot-Swappable', 'RGB Backlit', 'Wireless Tri-Mode']
+            },
+            {
+                id: 'p8',
+                title: 'AeroHub Smart Home Gateway',
+                category: 'Smart Home',
+                price: 189.99,
+                rating: 4.8,
+                reviewsCount: 43,
+                badge: 'Smart Hub',
+                badgeColor: 'bg-blue-500',
+                image: 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=800&q=80',
+                colors: ['#ffffff', '#1f2937'],
+                description: 'Central brain for smart electronics supporting Zigbee 3.0, Thread, Matter, and Wi-Fi 6 with local encryption.',
+                specs: ['Matter Ready', 'Local Encryption', 'Dual Band', 'Low Latency']
+            }
+        ];
+
+        // --- 2. STATE MANAGEMENT & LOCAL STORAGE ---
+        let cart = JSON.parse(localStorage.getItem('nexus_cart')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('nexus_wishlist')) || [];
+        let currentCategory = 'All';
+        let maxPriceFilter = 1000;
+        let activeDiscount = 0;
+
+        // --- 3. INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderCategoryPills();
+            renderProducts();
+            updateCartUI();
+            updateWishlistBadge();
+            setupSearchListeners();
+            setupHeroProduct();
+        });
+
+        // --- 4. HERO SECTION SET-UP ---
+        function setupHeroProduct() {
+            const heroProd = PRODUCTS[0];
+            document.getElementById('hero-title').innerText = heroProd.title;
+            document.getElementById('hero-category').innerText = `${heroProd.category} Series`;
+            document.getElementById('hero-price').innerText = `$${heroProd.price.toFixed(2)}`;
+            document.getElementById('hero-img').src = heroProd.image;
+            document.getElementById('hero-add-btn').onclick = () => addToCart(heroProd.id);
+        }
+
+        // --- 5. RENDER CATEGORY PILLS ---
+        function renderCategoryPills() {
+            const categories = ['All', 'Audio', 'Wearables', 'Smart Home', 'Accessories'];
+            const container = document.getElementById('category-pills');
+            
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" 
+                    class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
+                        currentCategory === cat 
+                        ? 'gradient-btn text-white shadow-md' 
+                        : 'glass text-gray-400 hover:text-white border border-gray-800'
+                    }">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        // --- 6. RENDER PRODUCTS GRID ---
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchKeyword = (document.getElementById('search-input').value || '').toLowerCase();
+
+            // Filter logic
+            let filtered = PRODUCTS.filter(prod => {
+                const matchesCat = currentCategory === 'All' || prod.category === currentCategory;
+                const matchesPrice = prod.price <= maxPriceFilter;
+                const matchesSearch = prod.title.toLowerCase().includes(searchKeyword) || 
+                                      prod.category.toLowerCase().includes(searchKeyword) ||
+                                      prod.description.toLowerCase().includes(searchKeyword);
+                return matchesCat && matchesPrice && matchesSearch;
+            });
+
+            // Sorting logic
+            const sortVal = document.getElementById('sort-select').value;
+            if (sortVal === 'price-low') filtered.sort((a,b) => a.price - b.price);
+            if (sortVal === 'price-high') filtered.sort((a,b) => b.price - a.price);
+            if (sortVal === 'rating') filtered.sort((a,b) => b.rating - a.rating);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(product => {
+                const isWishlisted = wishlist.includes(product.id);
+                return `
+                <div class="glass-card rounded-2xl p-5 flex flex-col justify-between group transition-all duration-300 hover:-translate-y-1 relative">
+                    <!-- Badge -->
+                    <span class="absolute top-4 left-4 ${product.badgeColor} text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider z-10 shadow-md">
+                        ${product.badge}
+                    </span>
+
+                    <!-- Wishlist Button -->
+                    <button onclick="toggleWishlist('${product.id}')" class="absolute top-4 right-4 z-10 p-2 rounded-full glass hover:bg-gray-800 transition-colors ${isWishlisted ? 'text-pink-500' : 'text-gray-400'}">
+                        <i data-lucide="heart" class="w-4 h-4 ${isWishlisted ? 'fill-current' : ''}"></i>
+                    </button>
+
+                    <!-- Product Image Container -->
+                    <div class="relative w-full h-48 my-2 flex items-center justify-center cursor-pointer overflow-hidden rounded-xl bg-dark-bg/40" onclick="openProductModal('${product.id}')">
+                        <img src="${product.image}" alt="${product.title}" class="max-h-full object-contain filter drop-shadow-md transition-transform duration-500 group-hover:scale-110">
+                    </div>
+
+                    <!-- Details -->
+                    <div class="space-y-2 mt-2">
+                        <div class="flex items-center justify-between text-xs text-gray-400">
+                            <span>${product.category}</span>
+                            <span class="flex items-center gap-1 text-amber-400 font-medium">
+                                ★ ${product.rating} <span class="text-gray-500">(${product.reviewsCount})</span>
+                            </span>
+                        </div>
+
+                        <h3 onclick="openProductModal('${product.id}')" class="text-base font-bold text-white group-hover:text-brand-400 transition-colors cursor-pointer line-clamp-1">
+                            ${product.title}
+                        </h3>
+
+                        <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">
+                            ${product.description}
+                        </p>
+
+                        <div class="pt-3 border-t border-gray-800/80 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-gray-500 block">Price</span>
+                                <span class="text-lg font-extrabold text-white">$${product.price.toFixed(2)}</span>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <button onclick="openProductModal('${product.id}')" class="p-2.5 glass text-gray-300 hover:text-white rounded-xl hover:bg-gray-800" title="Quick View">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="addToCart('${product.id}')" class="px-3.5 py-2.5 gradient-btn text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-md">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    <span>Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+
+            lucide.createIcons();
+        }
+
+        // --- 7. FILTER & SEARCH HANDLERS ---
+        function filterCategory(cat) {
+            currentCategory = cat;
+            renderCategoryPills();
+            renderProducts();
+        }
+
+        function updatePriceFilter(val) {
+            maxPriceFilter = parseFloat(val);
+            document.getElementById('price-display').innerText = `$${val}`;
+            renderProducts();
+        }
+
+        function applyFiltersAndSort() {
+            renderProducts();
+        }
+
+        function resetFilters() {
+            currentCategory = 'All';
+            maxPriceFilter = 1000;
+            document.getElementById('price-range').value = 1000;
+            document.getElementById('price-display').innerText = '$1000';
+            document.getElementById('search-input').value = '';
+            document.getElementById('mobile-search-input').value = '';
+            document.getElementById('sort-select').value = 'featured';
+            renderCategoryPills();
+            renderProducts();
+            showToast('Filters reset successfully');
+        }
+
+        function setupSearchListeners() {
+            const s1 = document.getElementById('search-input');
+            const s2 = document.getElementById('mobile-search-input');
+            
+            s1.addEventListener('input', (e) => {
+                s2.value = e.target.value;
+                renderProducts();
+            });
+            s2.addEventListener('input', (e) => {
+                s1.value = e.target.value;
+                renderProducts();
+            });
+        }
+
+        // --- 8. CART MANAGEMENT (LOCAL STORAGE) ---
+        function addToCart(productId, qty = 1) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingIndex = cart.findIndex(item => item.id === productId);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += qty;
+            } else {
+                cart.push({ ...product, qty: qty });
+            }
+
+            saveCart();
+            updateCartUI();
+            showToast(`Added ${product.title} to cart!`, 'success');
+        }
+
+        function updateQty(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== productId);
+                showToast('Item removed from cart');
+            }
+            saveCart();
+            updateCartUI();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.id !== productId);
+            saveCart();
+            updateCartUI();
+            showToast('Item removed');
+        }
+
+        function clearCart() {
+            cart = [];
+            activeDiscount = 0;
+            document.getElementById('discount-row').classList.add('hidden');
+            document.getElementById('promo-input').value = '';
+            saveCart();
+            updateCartUI();
+            showToast('Cart cleared');
+        }
+
+        function saveCart() {
+            localStorage.setItem('nexus_cart', JSON.stringify(cart));
+        }
+
+        function updateCartUI() {
+            const cartContainer = document.getElementById('cart-items-container');
+            const badge = document.getElementById('cart-badge');
+            const itemCount = document.getElementById('cart-item-count');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+            badge.innerText = totalItems;
+            itemCount.innerText = `${totalItems} Items`;
+
+            if (cart.length === 0) {
+                cartContainer.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>
+                        <p class="text-sm font-medium">Your cart is empty.</p>
+                        <button onclick="toggleCartDrawer(); scrollToProducts();" class="mt-4 text-xs text-brand-400 font-semibold hover:underline">Start Browsing</button>
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+                calculateCartTotals(0);
+                lucide.createIcons();
+                return;
+            }
+
+            checkoutBtn.disabled = false;
+            let subtotal = 0;
+
+            cartContainer.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+                return `
+                    <div class="glass-card rounded-xl p-3 flex gap-3 items-center border border-gray-800">
+                        <img src="${item.image}" alt="${item.title}" class="w-16 h-16 object-contain rounded-lg bg-dark-bg p-1">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate">${item.title}</h4>
+                            <p class="text-xs text-brand-400 font-semibold">$${item.price.toFixed(2)}</p>
+                            
+                            <!-- Quantity Controller -->
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="updateQty('${item.id}', -1)" class="w-6 h-6 rounded bg-dark-bg border border-gray-700 flex items-center justify-center text-gray-300 hover:text-white">-</button>
+                                <span class="text-xs font-bold text-white w-4 text-center">${item.qty}</span>
+                                <button onclick="updateQty('${item.id}', 1)" class="w-6 h-6 rounded bg-dark-bg border border-gray-700 flex items-center justify-center text-gray-300 hover:text-white">+</button>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col justify-between items-end h-full">
+                            <button onclick="removeFromCart('${item.id}')" class="text-gray-500 hover:text-red-400 p-1">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                            <span class="text-xs font-extrabold text-white">$${itemTotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            calculateCartTotals(subtotal);
+            lucide.createIcons();
+        }
+
+        function calculateCartTotals(subtotal) {
+            const discountAmt = subtotal * activeDiscount;
+            const discountedSubtotal = subtotal - discountAmt;
+            const tax = discountedSubtotal * 0.08;
+            const total = discountedSubtotal + tax;
+
+            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cart-tax').innerText = `$${tax.toFixed(2)}`;
+            document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('checkout-final-total').innerText = `$${total.toFixed(2)}`;
+
+            if (activeDiscount > 0) {
+                document.getElementById('cart-discount').innerText = `-$${discountAmt.toFixed(2)}`;
+                document.getElementById('discount-row').classList.remove('hidden');
+            }
+        }
+
+        function applyPromoCode() {
+            const code = document.getElementById('promo-input').value.trim().toUpperCase();
+            if (code === 'NEXUS20') {
+                activeDiscount = 0.20;
+                showToast('Promo Code Applied: 20% Discount!', 'success');
+                updateCartUI();
+            } else {
+                showToast('Invalid promo code. Try: NEXUS20', 'error');
+            }
+        }
+
+        // --- 9. WISHLIST MANAGEMENT ---
+        function toggleWishlist(productId) {
+            if (wishlist.includes(productId)) {
+                wishlist = wishlist.filter(id => id !== productId);
+                showToast('Removed from Wishlist');
+            } else {
+                wishlist.push(productId);
+                showToast('Saved to Wishlist!', 'success');
+            }
+            localStorage.setItem('nexus_wishlist', JSON.stringify(wishlist));
+            updateWishlistBadge();
+            renderProducts();
+        }
+
+        function updateWishlistBadge() {
+            const badge = document.getElementById('wishlist-badge');
+            if (wishlist.length > 0) {
+                badge.innerText = wishlist.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // --- 10. PRODUCT DETAIL MODAL ---
+        function openProductModal(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const modalContent = document.getElementById('product-modal-content');
+            modalContent.innerHTML = `
+                <div class="flex items-center justify-center p-6 bg-dark-bg/60 rounded-2xl">
+                    <img src="${product.image}" alt="${product.title}" class="max-h-72 object-contain filter drop-shadow-xl animate-float">
+                </div>
+
+                <div class="space-y-5">
+                    <div>
+                        <span class="${product.badgeColor} text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            ${product.badge}
+                        </span>
+                        <h2 class="text-2xl font-black text-white mt-3">${product.title}</h2>
+                        <div class="flex items-center gap-3 text-xs text-gray-400 mt-2">
+                            <span class="text-amber-400 font-bold">★ ${product.rating}</span>
+                            <span>•</span>
+                            <span>${product.reviewsCount} Customer Reviews</span>
+                            <span>•</span>
+                            <span class="text-emerald-400 font-semibold">In Stock</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed">${product.description}</p>
+
+                    <!-- Features/Specs Checklist -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Key Highlights</h4>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            ${product.specs.map(s => `
+                                <div class="flex items-center gap-1.5 text-gray-300">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-brand-400"></i>
+                                    <span>${s}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-800 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-gray-500 block">Total Price</span>
+                            <span class="text-3xl font-black text-white">$${product.price.toFixed(2)}</span>
+                        </div>
+
+                        <button onclick="addToCart('${product.id}'); closeProductModal();" class="px-6 py-3 gradient-btn text-white font-semibold rounded-xl flex items-center gap-2 shadow-lg">
+                            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                            <span>Add to Cart</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('product-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        // --- 11. CHECKOUT WORKFLOW ---
+        function openCheckoutModal() {
+            if (cart.length === 0) return;
+            toggleCartDrawer();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function processOrder(e) {
+            e.preventDefault();
+            const orderId = '#NX-' + Math.floor(10000 + Math.random() * 90000);
+            document.getElementById('order-id-display').innerText = orderId;
+
+            closeCheckoutModal();
+            document.getElementById('order-success-modal').classList.remove('hidden');
+        }
+
+        function finishOrderDemo() {
+            document.getElementById('order-success-modal').classList.add('hidden');
+            clearCart();
+            scrollToProducts();
+        }
+
+        // --- 12. UI TOGGLES & HELPERS ---
+        function toggleCartDrawer() {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-drawer-backdrop');
+
+            if (drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('hidden');
+                setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+            } else {
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.add('opacity-0');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function scrollToProducts() {
+            document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openDemoVideoModal() {
+            showToast('Demo Video: Ultra-HD Hardware Showcase playing...', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let bgColor = 'bg-dark-card border-brand-500/50 text-white';
+            if (type === 'success') bgColor = 'bg-dark-card border-emerald-500/50 text-emerald-300';
+            if (type === 'error') bgColor = 'bg-dark-card border-rose-500/50 text-rose-300';
+
+            toast.className = `toast-enter p-3.5 px-5 rounded-xl border glass shadow-2xl flex items-center gap-3 text-xs font-semibold ${bgColor} pointer-events-auto`;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-4 h-4 text-brand-400"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
